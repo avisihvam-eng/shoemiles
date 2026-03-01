@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0f1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Track your running shoe mileage. Know when to replace them. Works offline.">
+  <title>ShoeMiles — Shoe Mileage Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.svg">
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+  <!-- ═══ Header ═══ -->
+  <header class="app-header">
+    <h1><span class="icon">👟</span> ShoeMiles</h1>
+    <div class="header-actions">
+      <button class="icon-btn" id="btnAddShoe" aria-label="Add Shoe">＋</button>
+      <button class="icon-btn" id="btnSettings" aria-label="Settings">⚙</button>
+    </div>
+  </header>
+
+  <!-- ═══ Dashboard View ═══ -->
+  <main id="viewDashboard" class="view active">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotalKm">0</div>
+        <div class="stat-label">Total KM</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statTotalRuns">0</div>
+        <div class="stat-label">Runs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statAvgRun">0</div>
+        <div class="stat-label">Avg KM</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h2>Your Shoes</h2>
+    </div>
+
+    <div class="shoe-list" id="shoeList">
+      <!-- rendered by JS -->
+    </div>
+  </main>
+
+  <!-- ═══ History View ═══ -->
+  <section id="viewHistory" class="view">
+    <div class="filter-row" id="filterRow">
+      <button class="filter-chip active" data-period="all">All Time</button>
+      <button class="filter-chip" data-period="year">Year</button>
+      <button class="filter-chip" data-period="month">Month</button>
+      <button class="filter-chip" data-period="week">Week</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <!-- rendered by JS -->
+    </div>
+  </section>
+
+  <!-- ═══ Settings View ═══ -->
+  <section id="viewSettings" class="view">
+    <div class="section-header">
+      <h2>Settings</h2>
+    </div>
+    <div class="settings-section">
+      <!-- Auto-backup toggle -->
+      <div class="settings-toggle-row">
+        <div class="settings-toggle-info">
+          <span class="s-icon">🔄</span>
+          <div>
+            <div>Auto-Backup</div>
+            <div class="s-desc">Save backup to Downloads after every change</div>
+          </div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="autoBackupToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <button class="settings-btn" id="btnExport">
+        <span class="s-icon">📤</span>
+        <div>
+          <div>Export Backup</div>
+          <div class="s-desc">Save all data as a JSON file</div>
+        </div>
+      </button>
+      <button class="settings-btn" id="btnImport">
+        <span class="s-icon">📥</span>
+        <div>
+          <div>Import Backup</div>
+          <div class="s-desc">Restore data from a JSON file</div>
+        </div>
+      </button>
+      <input type="file" id="importInput" accept=".json">
+
+      <!-- Recovery tip -->
+      <div class="settings-tip">
+        <span>💡</span>
+        <span>If you ever clear your cache, just import <strong>shoemiles-backup.json</strong> from your Downloads to
+          restore all data.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Bottom Nav ═══ -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-view="viewDashboard">
+      <span class="nav-icon">🏠</span>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-view="viewHistory">
+      <span class="nav-icon">📋</span>
+      <span>History</span>
+    </button>
+    <button class="nav-item" data-view="viewSettings">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- ═══ Modal: Add/Edit Shoe ═══ -->
+  <div class="modal-overlay" id="modalShoe">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 id="modalShoeTitle">Add Shoe</h2>
+      <form id="formShoe" autocomplete="off">
+        <input type="hidden" id="shoeEditId">
+        <div class="form-group">
+          <label for="shoeName">Shoe Name *</label>
+          <input type="text" id="shoeName" placeholder="e.g. Nike Pegasus 41" required>
+        </div>
+        <div class="form-group">
+          <label for="shoeBrand">Brand</label>
+          <input type="text" id="shoeBrand" placeholder="e.g. Nike">
+        </div>
+        <div class="form-group">
+          <label for="shoeTarget">Target KM</label>
+          <input type="number" id="shoeTarget" value="500" min="1" step="1">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalShoe')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnShoeSubmit">Add Shoe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ Modal: Log/Edit Run ═══ -->
+  <div class="modal-overlay" id="modalRun">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 id="modalRunTitle">Log Run</h2>
+      <form id="formRun" autocomplete="off">
+        <input type="hidden" id="runEditId">
+        <input type="hidden" id="runShoeId">
+        <div class="form-group">
+          <label for="runShoeSelect">Shoe *</label>
+          <select id="runShoeSelect" required>
+            <option value="">Select Shoe</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="runDistance">Distance (KM) *</label>
+          <input type="number" id="runDistance" placeholder="e.g. 5.2" min="0.1" step="0.1" required>
+        </div>
+        <div class="form-group">
+          <label for="runDate">Date</label>
+          <input type="date" id="runDate" required>
+        </div>
+        <div class="form-group">
+          <label for="runNotes">Notes</label>
+          <input type="text" id="runNotes" placeholder="Optional notes">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalRun')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnRunSubmit">Log Run</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ Modal: Confirm Delete ═══ -->
+  <div class="modal-overlay" id="modalConfirm">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="confirm-body">
+        <div class="emoji">🗑️</div>
+        <h2 id="confirmTitle">Delete?</h2>
+        <p id="confirmMsg">This action cannot be undone.</p>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modalConfirm')">Cancel</button>
+        <button class="btn btn-danger" id="btnConfirmYes">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Install Banner ═══ -->
+  <div class="install-banner" id="installBanner">
+    <span class="ib-icon">📲</span>
+    <div class="ib-text">
+      <div class="ib-title">Install ShoeMiles</div>
+      <div class="ib-desc">Add to home screen for the best experience</div>
+    </div>
+    <button class="ib-btn" id="btnInstall">Install</button>
+    <button class="ib-close" id="btnInstallClose">✕</button>
+  </div>
+
+  <!-- ═══ Toast ═══ -->
+  <div class="toast" id="toast"></div>
+
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
