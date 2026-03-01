@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="80" fill="#0f1117"/>
-  <g transform="translate(256,270) scale(2.5)" fill="none" stroke="#39ff14" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <rect width="512" height="512" rx="80" fill="#1a1a1a"/>
+  <g transform="translate(256,270) scale(2.5)" fill="none" stroke="#FC4C02" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <!-- shoe sole -->
-    <path d="M-48,20 Q-50,10 -40,-5 Q-30,-15 -10,-18 Q10,-20 30,-15 Q45,-10 50,-2 Q55,5 50,15 Q48,22 40,22 L-42,22 Q-48,22 -48,20Z" fill="#39ff14" opacity="0.15"/>
+    <path d="M-48,20 Q-50,10 -40,-5 Q-30,-15 -10,-18 Q10,-20 30,-15 Q45,-10 50,-2 Q55,5 50,15 Q48,22 40,22 L-42,22 Q-48,22 -48,20Z" fill="#FC4C02" opacity="0.15"/>
     <path d="M-48,20 Q-50,10 -40,-5 Q-30,-15 -10,-18 Q10,-20 30,-15 Q45,-10 50,-2 Q55,5 50,15 Q48,22 40,22 L-42,22 Q-48,22 -48,20Z"/>
     <!-- shoe upper -->
-    <path d="M-40,-5 Q-35,-25 -15,-30 Q5,-35 20,-28 Q30,-22 30,-15" fill="#39ff14" opacity="0.1"/>
+    <path d="M-40,-5 Q-35,-25 -15,-30 Q5,-35 20,-28 Q30,-22 30,-15" fill="#FC4C02" opacity="0.1"/>
     <path d="M-40,-5 Q-35,-25 -15,-30 Q5,-35 20,-28 Q30,-22 30,-15"/>
     <!-- laces -->
     <line x1="-20" y1="-22" x2="-5" y2="-28"/>
@@ -13,9 +13,9 @@
     <line x1="-5" y1="-14" x2="15" y2="-22"/>
   </g>
   <!-- gauge arc -->
-  <g transform="translate(256,130) scale(2.5)" fill="none" stroke="#39ff14" stroke-width="3.5" stroke-linecap="round">
+  <g transform="translate(256,130) scale(2.5)" fill="none" stroke="#FC4C02" stroke-width="3.5" stroke-linecap="round">
     <path d="M-30,10 A35,35 0 0,1 30,10" opacity="0.3"/>
     <path d="M-30,10 A35,35 0 0,1 10,-2" stroke-width="4"/>
-    <circle cx="10" cy="-2" r="3" fill="#39ff14"/>
+    <circle cx="10" cy="-2" r="3" fill="#FC4C02"/>
   </g>
 </svg>

@@ -418,6 +418,37 @@ function initSettings() {
         }
         e.target.value = '';
     });
+
+    // Share / Google Drive backup
+    $('btnShareDrive').addEventListener('click', async () => {
+        try {
+            const json = await exportData();
+            const file = new File([json], `shoemiles-backup-${todayStr()}.json`, { type: 'application/json' });
+
+            // Use Web Share API if supported (Android → opens share sheet with Drive, WhatsApp, etc.)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: 'ShoeMiles Backup',
+                    text: 'My ShoeMiles data backup',
+                    files: [file]
+                });
+                toast('Backup shared!', 'success');
+            } else {
+                // Fallback: regular download
+                const url = URL.createObjectURL(file);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name;
+                a.click();
+                URL.revokeObjectURL(url);
+                toast('Backup downloaded (share not supported on this device)', 'success');
+            }
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                toast('Share failed', 'error');
+            }
+        }
+    });
 }
 
 /* ════ Auto-Backup UI ════ */
