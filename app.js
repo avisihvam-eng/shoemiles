@@ -423,30 +423,49 @@ function initSettings() {
     $('btnShareDrive').addEventListener('click', async () => {
         try {
             const json = await exportData();
-            const file = new File([json], `shoemiles-backup-${todayStr()}.json`, { type: 'application/json' });
+            const filename = `shoemiles-backup-${todayStr()}.txt`;
 
-            // Use Web Share API if supported (Android → opens share sheet with Drive, WhatsApp, etc.)
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: 'ShoeMiles Backup',
-                    text: 'My ShoeMiles data backup',
-                    files: [file]
-                });
-                toast('Backup shared!', 'success');
-            } else {
-                // Fallback: regular download
-                const url = URL.createObjectURL(file);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = file.name;
-                a.click();
-                URL.revokeObjectURL(url);
-                toast('Backup downloaded (share not supported on this device)', 'success');
+            // Try 1: Share as .txt file (more compatible than .json across share targets)
+            if (navigator.share) {
+                try {
+                    const file = new File([json], filename, { type: 'text/plain' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: 'ShoeMiles Backup',
+                            files: [file]
+                        });
+                        toast('Backup shared!', 'success');
+                        return;
+                    }
+                } catch (fileErr) {
+                    if (fileErr.name === 'AbortError') return; // user cancelled
+                    // File share failed, try text-only share below
+                }
+
+                // Try 2: Share as plain text (works on almost everything)
+                try {
+                    await navigator.share({
+                        title: 'ShoeMiles Backup',
+                        text: json
+                    });
+                    toast('Backup shared as text!', 'success');
+                    return;
+                } catch (textErr) {
+                    if (textErr.name === 'AbortError') return;
+                }
             }
+
+            // Try 3: Fallback — download the file directly
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `shoemiles-backup-${todayStr()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast('Backup saved to Downloads!', 'success');
         } catch (err) {
-            if (err.name !== 'AbortError') {
-                toast('Share failed', 'error');
-            }
+            toast('Backup failed — try Export instead', 'error');
         }
     });
 }
