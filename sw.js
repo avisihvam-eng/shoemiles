@@ -1,13 +1,13 @@
-const CACHE_NAME = 'shoemiles-v1';
+const CACHE_NAME = 'shoemiles-v2';
 const ASSETS = [
-    '/',
-    '/index.html',
-    '/index.css',
-    '/app.js',
-    '/db.js',
-    '/manifest.json',
-    '/icons/icon-192.svg',
-    '/icons/icon-512.svg'
+    './',
+    './index.html',
+    './index.css',
+    './app.js',
+    './db.js',
+    './manifest.json',
+    './icons/icon-192.svg',
+    './icons/icon-512.svg'
 ];
 
 // Install — cache all static assets
@@ -44,6 +44,6 @@ self.addEventListener('fetch', event => {
                 caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
                 return response;
             });
-        }).catch(() => caches.match('/index.html'))
+        }).catch(() => caches.match('./index.html'))
     );
 });

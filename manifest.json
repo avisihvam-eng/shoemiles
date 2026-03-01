@@ -2,7 +2,7 @@
     "name": "Shoe Mileage Tracker",
     "short_name": "ShoeMiles",
     "description": "Track your running shoe mileage and know when to replace them.",
-    "start_url": "/",
+    "start_url": "./",
     "display": "standalone",
     "orientation": "portrait",
     "theme_color": "#1a1a1a",
