@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shoemiles-v3';
+const CACHE_NAME = 'shoemiles-v4';
 const ASSETS = [
     './',
     './index.html',

@@ -146,6 +146,25 @@ button {
   color: var(--accent);
 }
 
+.pill-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.pill-btn:active {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
 /* ── Stats Row ── */
 .stats-row {
   display: grid;
@@ -446,10 +465,9 @@ button {
 }
 
 .run-actions button {
-  width: 30px;
-  height: 30px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
@@ -459,6 +477,10 @@ button {
 
 .run-actions button:active {
   background: rgba(255, 255, 255, 0.06);
+}
+
+.run-actions .btn-text-danger {
+  color: var(--danger);
 }
 
 .no-runs-msg {
@@ -493,28 +515,76 @@ button {
   color: var(--danger);
 }
 
-/* ── Empty State ── */
+/* ── Empty State & Onboarding ── */
 .empty-state {
-  text-align: center;
-  padding: clamp(40px, 15vh, 80px) var(--space-xl);
+  padding: var(--space-xl) var(--space-md);
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-md);
+  border: 1px solid var(--border);
 }
 
 .empty-state .emoji {
   font-size: 2.5rem;
   margin-bottom: var(--space-md);
+  text-align: center;
 }
 
 .empty-state h3 {
-  font-size: 1rem;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  margin-bottom: var(--space-xs);
   font-weight: 700;
-  margin-bottom: var(--space-sm);
+  text-align: center;
 }
 
 .empty-state p {
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  max-width: 240px;
-  margin: 0 auto;
+  font-size: 0.85rem;
+  margin-bottom: var(--space-lg);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.onboarding-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.onboarding-steps .step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: var(--bg-primary);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--accent);
+}
+
+.onboarding-steps .step-icon {
+  background: var(--accent);
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.onboarding-steps .step-text {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+.onboarding-steps .step-text strong {
+  color: var(--text-light);
+  font-weight: 600;
 }
 
 /* ── History View ── */

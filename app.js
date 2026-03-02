@@ -58,15 +58,7 @@ function initNav() {
             // Update header actions visibility
             const isSettings = viewId === 'viewSettings';
             $('btnAddShoe').style.display = isSettings ? 'none' : '';
-            $('btnSettings').style.display = isSettings ? 'none' : '';
         });
-    });
-
-    $('btnSettings').addEventListener('click', () => {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        $('viewSettings').classList.add('active');
-        document.querySelector('[data-view="viewSettings"]').classList.add('active');
     });
 }
 
@@ -87,8 +79,22 @@ function renderShoeList() {
         shoeListEl.innerHTML = `
       <div class="empty-state">
         <div class="emoji">👟</div>
-        <h3>No shoes yet</h3>
-        <p>Tap the ＋ button to add your first pair and start tracking mileage.</p>
+        <h3>Welcome to ShoeMiles</h3>
+        <p>Track your running shoe mileage and know exactly when it's time to replace them.</p>
+        <div class="onboarding-steps">
+          <div class="step">
+            <span class="step-icon">1</span>
+            <div class="step-text"><strong>Add a shoe</strong> with a target lifespan.</div>
+          </div>
+          <div class="step">
+            <span class="step-icon">2</span>
+            <div class="step-text"><strong>Log your runs</strong> to see the distance add up.</div>
+          </div>
+          <div class="step">
+            <span class="step-icon">3</span>
+            <div class="step-text"><strong>Track progress</strong> with alerts when they're wearing out.</div>
+          </div>
+        </div>
       </div>`;
         return;
     }
@@ -114,8 +120,8 @@ function renderShoeList() {
           ${r.notes ? `<div class="run-notes">${escHtml(r.notes)}</div>` : ''}
         </div>
         <div class="run-actions">
-          <button onclick="editRun('${r.id}')" aria-label="Edit run">✏️</button>
-          <button onclick="confirmDeleteRun('${r.id}')" aria-label="Delete run">🗑</button>
+          <button onclick="editRun('${r.id}')" aria-label="Edit run">✏️ Edit</button>
+          <button class="btn-text-danger" onclick="confirmDeleteRun('${r.id}')" aria-label="Delete run">✕ Delete</button>
         </div>
       </div>
     `).join('') : '<div class="no-runs-msg">No runs logged yet</div>';
