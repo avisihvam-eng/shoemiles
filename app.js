@@ -17,7 +17,7 @@ const toastEl = $('toast');
 
 /* ════ Initialization ════ */
 document.addEventListener('DOMContentLoaded', async () => {
-    await refresh();
+    // 1. Initialize UI listeners so the app is immediately interactive
     initNav();
     initModals();
     initFilters();
@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Auto-select target KM input on focus so default value is easy to replace
     $('shoeTarget').addEventListener('focus', function () { this.select(); });
+
+    // 2. Fetch data without blocking UI rendering
+    try {
+        await refresh();
+    } catch (e) {
+        console.error("Critical error during initial refresh:", e);
+    }
 });
 
 async function refresh() {
