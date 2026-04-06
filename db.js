@@ -23,7 +23,7 @@ function mapRun(d) {
 async function addShoe({ id, name, brand = '', targetKm = 500, createdAt }) {
     id = id || uid();
     const payload = { id, name, brand, target_km: Number(targetKm) };
-    if (createdAt) payload.created_at = createdAt;
+    if (createdAt) payload.created_at = typeof createdAt === 'number' ? new Date(createdAt).toISOString() : createdAt;
     
     // Upsert to handle imports/migrations seamlessly
     const { data, error } = await supabase.from('shoes').upsert([payload]).select().single();
@@ -57,7 +57,7 @@ async function getShoes() {
 async function addRun({ id, shoeId, distance, date, notes = '', createdAt }) {
     id = id || uid();
     const payload = { id, shoe_id: shoeId, distance: Number(distance), date, notes };
-    if (createdAt) payload.created_at = createdAt;
+    if (createdAt) payload.created_at = typeof createdAt === 'number' ? new Date(createdAt).toISOString() : createdAt;
     
     const { data, error } = await supabase.from('runs').upsert([payload]).select().single();
     if (error) throw error;
