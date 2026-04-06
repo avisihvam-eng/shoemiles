@@ -4,7 +4,7 @@
 
 const SUPABASE_URL = 'https://ovsoyipkwtbzvjfhsrrk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c295aXBrd3RienZqZmhzcnJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MTc0MDgsImV4cCI6MjA5MDk5MzQwOH0.R0R9NT-B_58c_iFrYxB1hRdbXSbWoP7jTTId6w9oL7A';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ── Shoe CRUD ── */
 
@@ -26,13 +26,13 @@ async function addShoe({ id, name, brand = '', targetKm = 500, createdAt }) {
     if (createdAt) payload.created_at = typeof createdAt === 'number' ? new Date(createdAt).toISOString() : createdAt;
     
     // Upsert to handle imports/migrations seamlessly
-    const { data, error } = await supabase.from('shoes').upsert([payload]).select().single();
+    const { data, error } = await supabaseClient.from('shoes').upsert([payload]).select().single();
     if (error) throw error;
     return mapShoe(data);
 }
 
 async function updateShoe(shoe) {
-    const { data, error } = await supabase.from('shoes').update({
+    const { data, error } = await supabaseClient.from('shoes').update({
         name: shoe.name,
         brand: shoe.brand,
         target_km: Number(shoe.targetKm)
@@ -42,12 +42,12 @@ async function updateShoe(shoe) {
 }
 
 async function deleteShoe(id) {
-    const { error } = await supabase.from('shoes').delete().eq('id', id);
+    const { error } = await supabaseClient.from('shoes').delete().eq('id', id);
     if (error) throw error;
 }
 
 async function getShoes() {
-    const { data, error } = await supabase.from('shoes').select('*');
+    const { data, error } = await supabaseClient.from('shoes').select('*');
     if (error) throw error;
     return data.map(mapShoe);
 }
@@ -59,13 +59,13 @@ async function addRun({ id, shoeId, distance, date, notes = '', createdAt }) {
     const payload = { id, shoe_id: shoeId, distance: Number(distance), date, notes };
     if (createdAt) payload.created_at = typeof createdAt === 'number' ? new Date(createdAt).toISOString() : createdAt;
     
-    const { data, error } = await supabase.from('runs').upsert([payload]).select().single();
+    const { data, error } = await supabaseClient.from('runs').upsert([payload]).select().single();
     if (error) throw error;
     return mapRun(data);
 }
 
 async function updateRun(run) {
-    const { data, error } = await supabase.from('runs').update({
+    const { data, error } = await supabaseClient.from('runs').update({
         shoe_id: run.shoeId,
         distance: Number(run.distance),
         date: run.date,
@@ -76,18 +76,18 @@ async function updateRun(run) {
 }
 
 async function deleteRun(id) {
-    const { error } = await supabase.from('runs').delete().eq('id', id);
+    const { error } = await supabaseClient.from('runs').delete().eq('id', id);
     if (error) throw error;
 }
 
 async function getAllRuns() {
-    const { data, error } = await supabase.from('runs').select('*');
+    const { data, error } = await supabaseClient.from('runs').select('*');
     if (error) throw error;
     return data.map(mapRun);
 }
 
 async function getRunsByShoe(shoeId) {
-    const { data, error } = await supabase.from('runs').select('*').eq('shoe_id', shoeId);
+    const { data, error } = await supabaseClient.from('runs').select('*').eq('shoe_id', shoeId);
     if (error) throw error;
     return data.map(mapRun);
 }
