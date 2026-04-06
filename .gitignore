@@ -12,3 +12,4 @@ desktop.ini
 # Misc
 node_modules/
 *.log
+.vercel

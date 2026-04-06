@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shoemiles-v4';
+const CACHE_NAME = 'shoemiles-v5';
 const ASSETS = [
     './',
     './index.html',
@@ -34,12 +34,17 @@ self.addEventListener('activate', event => {
 
 // Fetch — cache-first, fallback to network
 self.addEventListener('fetch', event => {
+    // Skip cross-origin requests, like Supabase APIs
+    if (!event.request.url.startsWith(self.location.origin)) {
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request).then(cached => {
             if (cached) return cached;
             return fetch(event.request).then(response => {
-                // Don't cache non-GET or external requests
-                if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+                // Don't cache non-GET requests
+                if (event.request.method !== 'GET') {
                     return response;
                 }
                 const clone = response.clone();

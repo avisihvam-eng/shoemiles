@@ -1,62 +1,10 @@
 /*  ───────────────────────────────────────
-    IndexedDB Data Layer — Shoe Mileage Tracker
+    Supabase Data Layer — Shoe Mileage Tracker
     ─────────────────────────────────────── */
 
-const DB_NAME = 'ShoeMilesDB';
-const DB_VERSION = 1;
-
-let _db = null;
-
-function openDB() {
-    if (_db) return Promise.resolve(_db);
-    return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
-
-        req.onupgradeneeded = e => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains('shoes')) {
-                const shoes = db.createObjectStore('shoes', { keyPath: 'id' });
-                shoes.createIndex('name', 'name', { unique: false });
-            }
-            if (!db.objectStoreNames.contains('runs')) {
-                const runs = db.createObjectStore('runs', { keyPath: 'id' });
-                runs.createIndex('shoeId', 'shoeId', { unique: false });
-                runs.createIndex('date', 'date', { unique: false });
-            }
-        };
-
-        req.onsuccess = e => { _db = e.target.result; resolve(_db); };
-        req.onerror = e => reject(e.target.error);
-    });
-}
-
-/* ── Generic helpers ── */
-
-function tx(storeName, mode = 'readonly') {
-    return openDB().then(db => {
-        const t = db.transaction(storeName, mode);
-        return t.objectStore(storeName);
-    });
-}
-
-function reqToPromise(req) {
-    return new Promise((resolve, reject) => {
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-    });
-}
-
-function getAll(storeName) {
-    return tx(storeName).then(s => reqToPromise(s.getAll()));
-}
-
-function put(storeName, item) {
-    return tx(storeName, 'readwrite').then(s => reqToPromise(s.put(item)));
-}
-
-function del(storeName, id) {
-    return tx(storeName, 'readwrite').then(s => reqToPromise(s.delete(id)));
-}
+const SUPABASE_URL = 'https://ovsoyipkwtbzvjfhsrrk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c295aXBrd3RienZqZmhzcnJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MTc0MDgsImV4cCI6MjA5MDk5MzQwOH0.R0R9NT-B_58c_iFrYxB1hRdbXSbWoP7jTTId6w9oL7A';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ── Shoe CRUD ── */
 
@@ -64,54 +12,84 @@ function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-async function addShoe({ name, brand = '', targetKm = 500 }) {
-    const shoe = { id: uid(), name, brand, targetKm: Number(targetKm), createdAt: new Date().toISOString() };
-    await put('shoes', shoe);
-    return shoe;
+function mapShoe(d) {
+    return { id: d.id, name: d.name, brand: d.brand, targetKm: Number(d.target_km), createdAt: d.created_at };
+}
+
+function mapRun(d) {
+    return { id: d.id, shoeId: d.shoe_id, distance: Number(d.distance), date: d.date, notes: d.notes, createdAt: d.created_at };
+}
+
+async function addShoe({ id, name, brand = '', targetKm = 500, createdAt }) {
+    id = id || uid();
+    const payload = { id, name, brand, target_km: Number(targetKm) };
+    if (createdAt) payload.created_at = createdAt;
+    
+    // Upsert to handle imports/migrations seamlessly
+    const { data, error } = await supabase.from('shoes').upsert([payload]).select().single();
+    if (error) throw error;
+    return mapShoe(data);
 }
 
 async function updateShoe(shoe) {
-    shoe.targetKm = Number(shoe.targetKm);
-    await put('shoes', shoe);
-    return shoe;
+    const { data, error } = await supabase.from('shoes').update({
+        name: shoe.name,
+        brand: shoe.brand,
+        target_km: Number(shoe.targetKm)
+    }).eq('id', shoe.id).select().single();
+    if (error) throw error;
+    return mapShoe(data);
 }
 
 async function deleteShoe(id) {
-    // Delete shoe and all associated runs
-    const runs = await getRunsByShoe(id);
-    for (const r of runs) await del('runs', r.id);
-    await del('shoes', id);
+    const { error } = await supabase.from('shoes').delete().eq('id', id);
+    if (error) throw error;
 }
 
 async function getShoes() {
-    return getAll('shoes');
+    const { data, error } = await supabase.from('shoes').select('*');
+    if (error) throw error;
+    return data.map(mapShoe);
 }
 
 /* ── Run CRUD ── */
 
-async function addRun({ shoeId, distance, date, notes = '' }) {
-    const run = { id: uid(), shoeId, distance: Number(distance), date, notes, createdAt: new Date().toISOString() };
-    await put('runs', run);
-    return run;
+async function addRun({ id, shoeId, distance, date, notes = '', createdAt }) {
+    id = id || uid();
+    const payload = { id, shoe_id: shoeId, distance: Number(distance), date, notes };
+    if (createdAt) payload.created_at = createdAt;
+    
+    const { data, error } = await supabase.from('runs').upsert([payload]).select().single();
+    if (error) throw error;
+    return mapRun(data);
 }
 
 async function updateRun(run) {
-    run.distance = Number(run.distance);
-    await put('runs', run);
-    return run;
+    const { data, error } = await supabase.from('runs').update({
+        shoe_id: run.shoeId,
+        distance: Number(run.distance),
+        date: run.date,
+        notes: run.notes
+    }).eq('id', run.id).select().single();
+    if (error) throw error;
+    return mapRun(data);
 }
 
 async function deleteRun(id) {
-    await del('runs', id);
+    const { error } = await supabase.from('runs').delete().eq('id', id);
+    if (error) throw error;
 }
 
 async function getAllRuns() {
-    return getAll('runs');
+    const { data, error } = await supabase.from('runs').select('*');
+    if (error) throw error;
+    return data.map(mapRun);
 }
 
 async function getRunsByShoe(shoeId) {
-    const all = await getAll('runs');
-    return all.filter(r => r.shoeId === shoeId);
+    const { data, error } = await supabase.from('runs').select('*').eq('shoe_id', shoeId);
+    if (error) throw error;
+    return data.map(mapRun);
 }
 
 function getRunsFiltered(runs, period) {
@@ -150,14 +128,26 @@ async function exportData() {
 async function importData(jsonString) {
     const data = JSON.parse(jsonString);
     if (!data.shoes || !data.runs) throw new Error('Invalid backup file');
-    // Clear existing data
-    const existingShoes = await getShoes();
-    for (const s of existingShoes) await del('shoes', s.id);
-    const existingRuns = await getAllRuns();
-    for (const r of existingRuns) await del('runs', r.id);
-    // Write imported data
-    for (const s of data.shoes) await put('shoes', s);
-    for (const r of data.runs) await put('runs', r);
+    
+    // Check what exists so we don't duplicate
+    const currentShoes = await getShoes();
+    const currentShoeIds = new Set(currentShoes.map(s => s.id));
+    
+    for (const s of data.shoes) {
+        if (!currentShoeIds.has(s.id)) {
+            await addShoe({ id: s.id, name: s.name, brand: s.brand, targetKm: s.targetKm, createdAt: s.createdAt });
+        }
+    }
+    
+    // Now same for runs
+    const currentRuns = await getAllRuns();
+    const currentRunIds = new Set(currentRuns.map(r => r.id));
+    
+    for (const r of data.runs) {
+        if (!currentRunIds.has(r.id)) {
+             await addRun({ id: r.id, shoeId: r.shoeId, distance: r.distance, date: r.date, notes: r.notes, createdAt: r.createdAt });
+        }
+    }
 }
 
 /* ── Auto-Backup ── */
@@ -165,10 +155,6 @@ async function importData(jsonString) {
 let _backupTimer = null;
 let _backupEnabled = true;
 
-/**
- * Schedule an auto-backup. Debounced — waits 2s after last data change
- * so rapid edits (e.g. multiple deletes) only trigger one backup.
- */
 function scheduleAutoBackup() {
     if (!_backupEnabled) return;
     clearTimeout(_backupTimer);
@@ -180,7 +166,6 @@ function scheduleAutoBackup() {
             const a = document.createElement('a');
             a.href = url;
             a.download = 'shoemiles-backup.json';
-            // Use a fixed filename so it overwrites the previous backup in Downloads
             a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
@@ -193,9 +178,6 @@ function scheduleAutoBackup() {
     }, 2000);
 }
 
-/**
- * Toggle auto-backup on/off. Returns new state.
- */
 function setAutoBackup(enabled) {
     _backupEnabled = enabled;
     localStorage.setItem('shoemiles_autobackup', enabled ? '1' : '0');
@@ -207,4 +189,59 @@ function isAutoBackupEnabled() {
     const stored = localStorage.getItem('shoemiles_autobackup');
     if (stored !== null) _backupEnabled = stored === '1';
     return _backupEnabled;
+}
+
+/* ── Migration from IndexedDB ── */
+async function migrateFromIndexedDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open('ShoeMilesDB', 1);
+        req.onerror = e => reject(e.target.error);
+        req.onsuccess = async e => {
+            try {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('shoes') || !db.objectStoreNames.contains('runs')) {
+                    resolve(0); // Nothing to migrate
+                    return;
+                }
+                
+                const t = db.transaction(['shoes', 'runs'], 'readonly');
+                
+                const getStoreData = (storeName) => new Promise((res, rej) => {
+                    const store = t.objectStore(storeName);
+                    const allReq = store.getAll();
+                    allReq.onsuccess = () => res(allReq.result);
+                    allReq.onerror = () => rej(allReq.error);
+                });
+                
+                const localShoes = await getStoreData('shoes');
+                const localRuns = await getStoreData('runs');
+                
+                let migratedCount = 0;
+                
+                // Fetch current supabase data to prevent duplicates
+                const currentShoes = await getShoes();
+                const currentShoeIds = new Set(currentShoes.map(s => s.id));
+                const currentRuns = await getAllRuns();
+                const currentRunIds = new Set(currentRuns.map(r => r.id));
+                
+                for (const s of localShoes) {
+                    if (!currentShoeIds.has(s.id)) {
+                        await addShoe({ id: s.id, name: s.name, brand: s.brand, targetKm: s.targetKm, createdAt: s.createdAt });
+                        migratedCount++;
+                    }
+                }
+                
+                for (const r of localRuns) {
+                    if (!currentRunIds.has(r.id)) {
+                        await addRun({ id: r.id, shoeId: r.shoeId, distance: r.distance, date: r.date, notes: r.notes, createdAt: r.createdAt });
+                        migratedCount++;
+                    }
+                }
+                
+                resolve(migratedCount);
+            } catch (err) {
+                reject(err);
+            }
+        };
+    });
 }

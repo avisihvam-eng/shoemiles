@@ -99,6 +99,13 @@
           <div class="s-desc">Restore data from a JSON file</div>
         </div>
       </button>
+      <button class="settings-btn" id="btnMigrate" style="background: rgba(var(--brand-rgb), 0.1); border-color: var(--brand);">
+        <span class="s-icon">⚡</span>
+        <div>
+          <div>Migrate Local Data</div>
+          <div class="s-desc">Move data from old local storage to cloud</div>
+        </div>
+      </button>
       <button class="settings-btn" id="btnShareDrive">
         <span class="s-icon">☁️</span>
         <div>
@@ -224,6 +231,7 @@
   <!-- ═══ Toast ═══ -->
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="db.js"></script>
   <script src="app.js"></script>
 </body>

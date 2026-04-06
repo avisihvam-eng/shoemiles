@@ -425,6 +425,17 @@ function initSettings() {
         e.target.value = '';
     });
 
+    $('btnMigrate').addEventListener('click', async () => {
+        try {
+            const count = await migrateFromIndexedDB();
+            toast(`Migrated ${count} records!`, 'success');
+            await refresh();
+        } catch (err) {
+            toast('Migration failed', 'error');
+            console.error(err);
+        }
+    });
+
     // Share / Google Drive backup
     $('btnShareDrive').addEventListener('click', async () => {
         try {
